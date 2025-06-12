@@ -52,4 +52,3 @@ app.get("/api/results", (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
-
