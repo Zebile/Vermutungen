@@ -1,65 +1,55 @@
-const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const bodyParser = require('body-parser');
-const ExcelJS = require('exceljs');
+const express = require("express");
+const sqlite3 = require("sqlite3").verbose();
+const cors = require("cors");
+const path = require("path");
 
 const app = express();
-const db = new sqlite3.Database('./data.db');
 const PORT = process.env.PORT || 3000;
 
-db.run(`CREATE TABLE IF NOT EXISTS votes (
-  id INTEGER PRIMARY KEY,
-  gender_perp TEXT, gender_victim TEXT, relation TEXT,
-  ts INTEGER
-)`);
+const db = new sqlite3.Database(path.join(__dirname, "data.db"));
 
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "../frontend")));
 
-app.post('/vote', (req, res) => {
-  const { gender_perp, gender_victim, relation } = req.body;
-  const ts = Date.now();
-  db.run(`INSERT INTO votes (gender_perp, gender_victim, relation, ts) VALUES (?,?,?,?)`,
-    [gender_perp, gender_victim, relation, ts],
-    err => err ? res.status(500).send(err) : res.sendStatus(200));
+db.serialize(() => {
+  db.run(`CREATE TABLE IF NOT EXISTS votes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    taeter TEXT,
+    betroffener TEXT,
+    umfeld TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`);
 });
 
-app.get('/results', (req, res) => {
-  const cutoff = Date.now() - 2*60*60*1000;
-  db.run(`DELETE FROM votes WHERE ts < ?`, cutoff);
-  db.all(`SELECT gender_perp, gender_victim, relation, COUNT(*) as count 
-          FROM votes 
-          WHERE ts >= ?
-          GROUP BY gender_perp, gender_victim, relation`, [cutoff], (err, rows) => {
-    if(err) return res.status(500).send(err);
-    const agg = {
-      männlich:0, weiblich:0,
-      Junge:0, Mädchen:0,
-      nah:0, fern:0
-    };
-    rows.forEach(r => {
-      agg[r.gender_perp] = (agg[r.gender_perp]||0) + r.count;
-      agg[r.gender_victim] = (agg[r.gender_victim]||0) + r.count;
-      agg[r.relation] = (agg[r.relation]||0) + r.count;
-    });
-    res.json(agg);
+app.post("/api/vote", (req, res) => {
+  const { taeter, betroffener, umfeld } = req.body;
+
+  db.run("INSERT INTO votes (taeter, betroffener, umfeld) VALUES (?, ?, ?)", [taeter, betroffener, umfeld], (err) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.status(200).json({ message: "Erfasst" });
   });
 });
 
-app.get('/export', async (req, res) => {
-  const cutoff = Date.now() - 2*60*60*1000;
-  const rows = await new Promise((resolve, reject) => 
-    db.all(`SELECT * FROM votes WHERE ts >= ?`, cutoff, (e,rows) => e ? reject(e) : resolve(rows))
-  );
-  const wb = new ExcelJS.Workbook();
-  const ws = wb.addWorksheet('votes');
-  ws.addRow(['id','gender_perp','gender_victim','relation','timestamp']);
-  rows.forEach(v => ws.addRow([v.id, v.gender_perp, v.gender_victim, v.relation, new Date(v.ts).toISOString()]));
-  res.setHeader('Content-Type','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.setHeader('Content-Disposition','attachment; filename="votes.xlsx"');
-  await wb.xlsx.write(res);
-  res.end();
+app.get("/api/results", (req, res) => {
+  db.all("SELECT * FROM votes WHERE created_at >= datetime('now', '-2 hours')", (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    const stats = {
+      taeter: { maennlich: 0, weiblich: 0 },
+      betroffener: { junge: 0, maedchen: 0 },
+      umfeld: { nah: 0, fern: 0 },
+    };
+
+    rows.forEach((r) => {
+      if (r.taeter in stats.taeter) stats.taeter[r.taeter]++;
+      if (r.betroffener in stats.betroffener) stats.betroffener[r.betroffener]++;
+      if (r.umfeld in stats.umfeld) stats.umfeld[r.umfeld]++;
+    });
+
+    res.json(stats);
+  });
 });
 
 app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
+
