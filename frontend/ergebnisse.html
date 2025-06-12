@@ -2,9 +2,76 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ergebnisse</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      box-sizing: border-box;
+      background: #f7f8fa;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 10px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-top: 18px;
+      margin-bottom: 25px;
+    }
+    canvas {
+      width: 100% !important;
+      max-width: 100%;
+      height: 260px !important;
+      margin-bottom: 24px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: block;
+    }
+    .download-btn {
+      display: block;
+      margin: 20px auto 0 auto;
+      text-align: center;
+      background: #007bff;
+      color: #fff !important;
+      padding: 12px 20px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 1rem;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+      transition: background 0.2s;
+      max-width: 320px;
+    }
+    .download-btn:hover, .download-btn:focus {
+      background: #0056b3;
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.15rem;
+        margin-bottom: 16px;
+      }
+      .container {
+        padding: 5px;
+      }
+      canvas {
+        margin-bottom: 16px;
+        border-radius: 5px;
+        height: 180px !important;
+      }
+      .download-btn {
+        font-size: 0.95rem;
+        padding: 10px 8px;
+        max-width: 95vw;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -12,78 +79,103 @@
     <canvas id="chart1"></canvas>
     <canvas id="chart2"></canvas>
     <canvas id="chart3"></canvas>
+    <a href="/api/export" class="download-btn" download>
+      Ergebnisse als Excel herunterladen
+    </a>
   </div>
 
   <script>
-  let chart1, chart2, chart3;
+    let chart1, chart2, chart3;
 
-  async function fetchResults() {
-    const res = await fetch("/api/results");
-    const data = await res.json();
+    async function fetchResults() {
+      try {
+        const res = await fetch("/api/results");
+        const data = await res.json();
 
-    // Chart 1: Tätergeschlecht
-    if (!chart1) {
-      chart1 = new Chart(document.getElementById("chart1"), {
-        type: "bar",
-        data: {
-          labels: ["Männlich", "Weiblich"],
-          datasets: [{
-            label: "Tätergeschlecht",
-            data: [data.taeter.maennlich, data.taeter.weiblich],
-            backgroundColor: ["#007bff", "#ff6384"]
-          }]
+        // Chart 1: Tätergeschlecht
+        if (!chart1) {
+          chart1 = new Chart(document.getElementById("chart1"), {
+            type: "bar",
+            data: {
+              labels: ["Männlich", "Weiblich"],
+              datasets: [{
+                label: "Tätergeschlecht",
+                data: [data.taeter.maennlich, data.taeter.weiblich],
+                backgroundColor: ["#007bff", "#ff6384"]
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              }
+            }
+          });
+        } else {
+          chart1.data.datasets[0].data = [data.taeter.maennlich, data.taeter.weiblich];
+          chart1.update();
         }
-      });
-    } else {
-      chart1.data.datasets[0].data = [data.taeter.maennlich, data.taeter.weiblich];
-      chart1.update();
+
+        // Chart 2: Geschlecht Betroffener
+        if (!chart2) {
+          chart2 = new Chart(document.getElementById("chart2"), {
+            type: "bar",
+            data: {
+              labels: ["Junge", "Mädchen"],
+              datasets: [{
+                label: "Geschlecht Betroffener",
+                data: [data.betroffener.junge, data.betroffener.maedchen],
+                backgroundColor: ["#36a2eb", "#f87979"]
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              }
+            }
+          });
+        } else {
+          chart2.data.datasets[0].data = [data.betroffener.junge, data.betroffener.maedchen];
+          chart2.update();
+        }
+
+        // Chart 3: Täterumfeld
+        if (!chart3) {
+          chart3 = new Chart(document.getElementById("chart3"), {
+            type: "bar",
+            data: {
+              labels: ["Nahes Umfeld", "Fernes Umfeld"],
+              datasets: [{
+                label: "Täterumfeld",
+                data: [data.umfeld.nah, data.umfeld.fern],
+                backgroundColor: ["#4bc0c0", "#9966ff"]
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false }
+              }
+            }
+          });
+        } else {
+          chart3.data.datasets[0].data = [data.umfeld.nah, data.umfeld.fern];
+          chart3.update();
+        }
+      } catch (error) {
+        // Optional: Fehleranzeige
+        console.error("Fehler beim Laden der Ergebnisse:", error);
+      }
     }
 
-    // Chart 2: Geschlecht Betroffener
-    if (!chart2) {
-      chart2 = new Chart(document.getElementById("chart2"), {
-        type: "bar",
-        data: {
-          labels: ["Junge", "Mädchen"],
-          datasets: [{
-            label: "Geschlecht Betroffener",
-            data: [data.betroffener.junge, data.betroffener.maedchen],
-            backgroundColor: ["#36a2eb", "#f87979"]
-          }]
-        }
-      });
-    } else {
-      chart2.data.datasets[0].data = [data.betroffener.junge, data.betroffener.maedchen];
-      chart2.update();
-    }
-
-    // Chart 3: Täterumfeld
-    if (!chart3) {
-      chart3 = new Chart(document.getElementById("chart3"), {
-        type: "bar",
-        data: {
-          labels: ["Nahes Umfeld", "Fernes Umfeld"],
-          datasets: [{
-            label: "Täterumfeld",
-            data: [data.umfeld.nah, data.umfeld.fern],
-            backgroundColor: ["#4bc0c0", "#9966ff"]
-          }]
-        }
-      });
-    } else {
-      chart3.data.datasets[0].data = [data.umfeld.nah, data.umfeld.fern];
-      chart3.update();
-    }
-  }
-
-  // Beim Laden der Seite einmal Ergebnisse laden
-  fetchResults();
-  // Alle 5 Sekunden Ergebnisse neu laden
-  setInterval(fetchResults, 5000);
-</script>
+    // Initial laden
+    fetchResults();
+    // Alle 5 Sekunden neu laden
+    setInterval(fetchResults, 5000);
+  </script>
 </body>
-  <a href="/api/export" class="download-btn" download>
-  Ergebnisse als Excel herunterladen
-</a>
-
 </html>
