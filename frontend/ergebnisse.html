@@ -32,7 +32,7 @@
     }
     canvas {
       width: 100% !important;
-      height: 400px !important;
+      height: 420px !important;
       margin-bottom: 40px;
       background: #f9faff;
       border-radius: 12px;
@@ -75,6 +75,7 @@
       return {
         responsive: true,
         maintainAspectRatio: false,
+        indexAxis: 'y',  // Horizontalbalken aktivieren
         layout: {
           padding: { top: 20, bottom: 20, left: 10, right: 10 }
         },
@@ -92,6 +93,7 @@
         },
         scales: {
           x: {
+            beginAtZero: true,
             title: {
               display: true,
               text: xTitle,
@@ -100,15 +102,10 @@
             },
             ticks: {
               font: { size: getTickSize() },
-              color: '#333',
-              callback: function(value) {
-                const label = this.getLabelForValue(value);
-                return label.length > 10 ? label.slice(0, 10) + '…' : label;
-              }
+              color: '#333'
             }
           },
           y: {
-            beginAtZero: true,
             title: {
               display: true,
               text: yTitle,
@@ -170,29 +167,29 @@
           chart1 = new Chart(ctx1, {
             type: 'bar',
             data: data1,
-            options: getOptions("Geschlecht", "Anzahl")
+            options: getOptions("Anzahl", "Geschlecht")
           });
           chart2 = new Chart(ctx2, {
             type: 'bar',
             data: data2,
-            options: getOptions("Geschlecht", "Anzahl")
+            options: getOptions("Anzahl", "Geschlecht")
           });
           chart3 = new Chart(ctx3, {
             type: 'bar',
             data: data3,
-            options: getOptions("Umfeld", "Anzahl")
+            options: getOptions("Anzahl", "Umfeld")
           });
         } else {
           chart1.data = data1;
-          chart1.options = getOptions("Geschlecht", "Anzahl");
+          chart1.options = getOptions("Anzahl", "Geschlecht");
           chart1.update();
 
           chart2.data = data2;
-          chart2.options = getOptions("Geschlecht", "Anzahl");
+          chart2.options = getOptions("Anzahl", "Geschlecht");
           chart2.update();
 
           chart3.data = data3;
-          chart3.options = getOptions("Umfeld", "Anzahl");
+          chart3.options = getOptions("Anzahl", "Umfeld");
           chart3.update();
         }
 
