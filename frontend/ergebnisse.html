@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ergebnisse</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Live-Ergebnisse</h1>
+    <canvas id="chart1"></canvas>
+    <canvas id="chart2"></canvas>
+    <canvas id="chart3"></canvas>
+  </div>
+
+  <script>
+    async function fetchResults() {
+      const res = await fetch("/api/results");
+      const data = await res.json();
+
+      new Chart(document.getElementById("chart1"), {
+        type: "bar",
+        data: {
+          labels: ["Männlich", "Weiblich"],
+          datasets: [{ label: "Tätergeschlecht", data: [data.taeter.maennlich, data.taeter.weiblich], backgroundColor: ["#007bff", "#ff6384"] }]
+        }
+      });
+
+      new Chart(document.getElementById("chart2"), {
+        type: "bar",
+        data: {
+          labels: ["Junge", "Mädchen"],
+          datasets: [{ label: "Geschlecht Betroffener", data: [data.betroffener.junge, data.betroffener.maedchen], backgroundColor: ["#36a2eb", "#f87979"] }]
+        }
+      });
+
+      new Chart(document.getElementById("chart3"), {
+        type: "bar",
+        data: {
+          labels: ["Nahes Umfeld", "Fernes Umfeld"],
+          datasets: [{ label: "Täterumfeld", data: [data.umfeld.nah, data.umfeld.fern], backgroundColor: ["#4bc0c0", "#9966ff"] }]
+        }
+      });
+    }
+
+    fetchResults();
+  </script>
+</body>
+</html>
