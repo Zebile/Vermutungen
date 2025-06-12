@@ -48,3 +48,19 @@ button {
 button:hover {
   background-color: #0056b3;
 }
+
+.download-btn {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #28a745;
+  color: white;
+  border-radius: 6px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.download-btn:hover {
+  background-color: #218838;
+}
