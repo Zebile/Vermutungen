@@ -14,6 +14,7 @@
       color: #1a1a1a;
       box-sizing: border-box;
     }
+
     .container {
       max-width: 900px;
       margin: 0 auto;
@@ -22,6 +23,7 @@
       border-radius: 14px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     }
+
     h1 {
       font-size: 2rem;
       text-align: center;
@@ -30,14 +32,16 @@
       font-weight: 700;
       letter-spacing: 0.03em;
     }
+
     canvas {
       width: 100% !important;
-      height: 420px !important;
+      height: 460px !important;
       margin-bottom: 40px;
       background: #f9faff;
       border-radius: 12px;
       box-shadow: 0 1px 6px rgba(0,0,0,0.05);
     }
+
     .download-btn {
       display: block;
       margin: 28px auto 0 auto;
@@ -53,6 +57,7 @@
       transition: background 0.2s;
       max-width: 400px;
     }
+
     .download-btn:hover {
       background: #0056b3;
     }
@@ -68,23 +73,28 @@
   </div>
 
   <script>
-    const getFontSize = () => window.innerWidth < 600 ? 16 : window.innerWidth < 900 ? 20 : 24;
-    const getTickSize = () => window.innerWidth < 600 ? 14 : window.innerWidth < 900 ? 16 : 20;
+    const getFontSize = () => window.innerWidth < 600 ? 24 : window.innerWidth < 900 ? 28 : 32;
+    const getTickSize = () => window.innerWidth < 600 ? 20 : window.innerWidth < 900 ? 24 : 28;
 
     function getOptions(xTitle, yTitle) {
       return {
         responsive: true,
         maintainAspectRatio: false,
-        indexAxis: 'y',  // Horizontalbalken aktivieren
+        indexAxis: 'y', // Horizontale Balken
         layout: {
           padding: { top: 20, bottom: 20, left: 10, right: 10 }
         },
         plugins: {
           legend: {
-            labels: {
-              font: { size: getFontSize(), weight: 'bold' }
-            },
             position: 'top',
+            labels: {
+              font: {
+                size: getFontSize(),
+                weight: 'bold',
+              },
+              maxWidth: 200,
+              boxHeight: 24
+            }
           },
           tooltip: {
             bodyFont: { size: getFontSize() },
@@ -97,24 +107,42 @@
             title: {
               display: true,
               text: xTitle,
-              font: { size: getFontSize(), weight: 'bold' },
+              font: {
+                size: getFontSize(),
+                weight: 'bold'
+              },
               color: '#111'
             },
             ticks: {
-              font: { size: getTickSize() },
-              color: '#333'
+              font: {
+                size: getTickSize(),
+                weight: '500'
+              },
+              color: '#333',
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 10
             }
           },
           y: {
             title: {
               display: true,
               text: yTitle,
-              font: { size: getFontSize(), weight: 'bold' },
+              font: {
+                size: getFontSize(),
+                weight: 'bold'
+              },
               color: '#111'
             },
             ticks: {
-              font: { size: getTickSize() },
-              color: '#333'
+              font: {
+                size: getTickSize(),
+                weight: '500'
+              },
+              color: '#333',
+              maxWidth: 180,
+              minRotation: 0,
+              padding: 6
             }
           }
         }
