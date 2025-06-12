@@ -1,46 +1,53 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <title>Studie zu sexuellem Missbrauch</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Studie zu Missbrauchstätern</title>
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="script.js"></script>
 </head>
 <body>
-  <div id="form">
-    <h2>Vermutungen zu Täter*innen von sexuellen Missbrauch</h2>
+  <div class="container">
+    <h1>Vermutungen zu Täter*innen von sexuellen Missbrauch</h1>
     <form id="voteForm">
-      <label>
-        Geschlecht Täter: 
-        <select name="gender_perp" required>
-          <option value="">--</option>
-          <option value="männlich">männlich</option>
-          <option value="weiblich">weiblich</option>
-        </select>
-      </label><br>
-      <label>
-        Geschlecht Betroffene*r:
-        <select name="gender_victim" required>
-          <option value="">--</option>
-          <option value="Junge">Junge</option>
-          <option value="Mädchen">Mädchen</option>
-        </select>
-      </label><br>
-      <label>
-        Umfeld:
-        <select name="relation" required>
-          <option value="">--</option>
-          <option value="nah">nah</option>
-          <option value="fern">fern</option>
-        </select>
-      </label><br>
+      <div class="frage">
+        <p>Geschlecht des Täters/der Täterin:</p>
+        <label><input type="radio" name="taeter" value="maennlich" required /> Männlich</label>
+        <label><input type="radio" name="taeter" value="weiblich" /> Weiblich</label>
+      </div>
+      <div class="frage">
+        <p>Geschlecht des Betroffenen/der Betroffenen:</p>
+        <label><input type="radio" name="betroffener" value="junge" required /> Junge</label>
+        <label><input type="radio" name="betroffener" value="maedchen" /> Mädchen</label>
+      </div>
+      <div class="frage">
+        <p>Herkunft des Täters/der Täterin:</p>
+        <label><input type="radio" name="umfeld" value="nah" required /> Nahes Umfeld</label>
+        <label><input type="radio" name="umfeld" value="fern" /> Fernes Umfeld</label>
+      </div>
       <button type="submit">Absenden</button>
     </form>
   </div>
 
-  <div id="results" style="display:none;">
-    <h2>Ergebnisse (letzte 2 Stunden)</h2>
-    <canvas id="chart"></canvas>
-  </div>
+  <script>
+    document.getElementById("voteForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const data = {
+        taeter: document.querySelector('input[name="taeter"]:checked').value,
+        betroffener: document.querySelector('input[name="betroffener"]:checked').value,
+        umfeld: document.querySelector('input[name="umfeld"]:checked').value,
+      };
+
+      await fetch("/api/vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      window.location.href = "/ergebnisse.html";
+    });
+  </script>
 </body>
 </html>
