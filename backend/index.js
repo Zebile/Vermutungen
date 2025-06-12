@@ -52,3 +52,36 @@ app.get("/api/results", (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
+
+const ExcelJS = require("exceljs");
+
+app.get("/api/export", (req, res) => {
+  db.all("SELECT * FROM votes WHERE created_at >= datetime('now', '-2 hours')", async (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Umfrage-Ergebnisse");
+
+    sheet.columns = [
+      { header: "ID", key: "id" },
+      { header: "Tätergeschlecht", key: "taeter" },
+      { header: "Betroffener", key: "betroffener" },
+      { header: "Umfeld", key: "umfeld" },
+      { header: "Zeitpunkt", key: "created_at" }
+    ];
+
+    sheet.addRows(rows);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=umfrage_ergebnisse.xlsx"
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  });
+});
