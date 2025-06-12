@@ -53,8 +53,6 @@ app.get("/api/results", (req, res) => {
 
 app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
 
-npm install exceljs
-
 const ExcelJS = require("exceljs");
 
 app.get("/api/export", (req, res) => {
