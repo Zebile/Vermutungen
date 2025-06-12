@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
@@ -7,7 +7,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* Basis-Layout für mobile Ansicht */
     body, html {
       margin: 0;
       padding: 0;
@@ -63,7 +62,7 @@
       box-shadow: 0 4px 16px rgba(0,0,0,0.10);
     }
 
-    /* Desktop-Optimierung */
+    /* Desktop */
     @media (min-width: 900px) {
       .container {
         padding: 34px 40px 48px 40px;
@@ -82,7 +81,7 @@
       }
     }
 
-    /* Tablet/Phablet */
+    /* Tablet */
     @media (min-width: 600px) and (max-width: 900px) {
       .container {
         padding: 28px 18px 32px 18px;
@@ -95,7 +94,7 @@
       }
     }
 
-    /* Mobile-Optimierung */
+    /* Mobile */
     @media (max-width: 600px) {
       .container {
         padding: 8px 2vw 18px 2vw;
@@ -134,101 +133,126 @@
   <script>
     let chart1, chart2, chart3;
 
+    function getFontSize() {
+      const w = window.innerWidth;
+      if (w < 600) return 16;
+      if (w < 900) return 18;
+      return 22;
+    }
+
+    function getTickFontSize() {
+      const w = window.innerWidth;
+      if (w < 600) return 13;
+      if (w < 900) return 15;
+      return 17;
+    }
+
+    function getCommonOptions(xTitle, yTitle) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              font: { size: getFontSize(), weight: 'bold' }
+            }
+          },
+          title: {
+            display: false
+          }
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: xTitle,
+              font: { size: getFontSize(), weight: 'bold' },
+              color: '#222'
+            },
+            ticks: {
+              font: { size: getTickFontSize() },
+              color: '#333'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: yTitle,
+              font: { size: getFontSize(), weight: 'bold' },
+              color: '#222'
+            },
+            ticks: {
+              font: { size: getTickFontSize() },
+              color: '#333'
+            }
+          }
+        }
+      };
+    }
+
+    function updateCharts(data) {
+      if (chart1) chart1.destroy();
+      if (chart2) chart2.destroy();
+      if (chart3) chart3.destroy();
+
+      chart1 = new Chart(document.getElementById("chart1"), {
+        type: "bar",
+        data: {
+          labels: ["Männlich", "Weiblich"],
+          datasets: [{
+            label: "Tätergeschlecht",
+            data: [data.taeter.maennlich, data.taeter.weiblich],
+            backgroundColor: ["#007bff", "#ff6384"]
+          }]
+        },
+        options: getCommonOptions("Geschlecht", "Anzahl")
+      });
+
+      chart2 = new Chart(document.getElementById("chart2"), {
+        type: "bar",
+        data: {
+          labels: ["Junge", "Mädchen"],
+          datasets: [{
+            label: "Geschlecht Betroffener",
+            data: [data.betroffener.junge, data.betroffener.maedchen],
+            backgroundColor: ["#36a2eb", "#f87979"]
+          }]
+        },
+        options: getCommonOptions("Geschlecht", "Anzahl")
+      });
+
+      chart3 = new Chart(document.getElementById("chart3"), {
+        type: "bar",
+        data: {
+          labels: ["Nahes Umfeld", "Fernes Umfeld"],
+          datasets: [{
+            label: "Täterumfeld",
+            data: [data.umfeld.nah, data.umfeld.fern],
+            backgroundColor: ["#4bc0c0", "#9966ff"]
+          }]
+        },
+        options: getCommonOptions("Umfeld", "Anzahl")
+      });
+    }
+
     async function fetchResults() {
       try {
         const res = await fetch("/api/results");
         const data = await res.json();
-
-        // Chart 1: Tätergeschlecht
-        if (!chart1) {
-          chart1 = new Chart(document.getElementById("chart1"), {
-            type: "bar",
-            data: {
-              labels: ["Männlich", "Weiblich"],
-              datasets: [{
-                label: "Tätergeschlecht",
-                data: [data.taeter.maennlich, data.taeter.weiblich],
-                backgroundColor: ["#007bff", "#ff6384"]
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                x: { ticks: { font: { size: 15 } } },
-                y: { beginAtZero: true, ticks: { font: { size: 14 } } }
-              }
-            }
-          });
-        } else {
-          chart1.data.datasets[0].data = [data.taeter.maennlich, data.taeter.weiblich];
-          chart1.update();
-        }
-
-        // Chart 2: Geschlecht Betroffener
-        if (!chart2) {
-          chart2 = new Chart(document.getElementById("chart2"), {
-            type: "bar",
-            data: {
-              labels: ["Junge", "Mädchen"],
-              datasets: [{
-                label: "Geschlecht Betroffener",
-                data: [data.betroffener.junge, data.betroffener.maedchen],
-                backgroundColor: ["#36a2eb", "#f87979"]
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                x: { ticks: { font: { size: 15 } } },
-                y: { beginAtZero: true, ticks: { font: { size: 14 } } }
-              }
-            }
-          });
-        } else {
-          chart2.data.datasets[0].data = [data.betroffener.junge, data.betroffener.maedchen];
-          chart2.update();
-        }
-
-        // Chart 3: Täterumfeld
-        if (!chart3) {
-          chart3 = new Chart(document.getElementById("chart3"), {
-            type: "bar",
-            data: {
-              labels: ["Nahes Umfeld", "Fernes Umfeld"],
-              datasets: [{
-                label: "Täterumfeld",
-                data: [data.umfeld.nah, data.umfeld.fern],
-                backgroundColor: ["#4bc0c0", "#9966ff"]
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                x: { ticks: { font: { size: 15 } } },
-                y: { beginAtZero: true, ticks: { font: { size: 14 } } }
-              }
-            }
-          });
-        } else {
-          chart3.data.datasets[0].data = [data.umfeld.nah, data.umfeld.fern];
-          chart3.update();
-        }
+        updateCharts(data);
       } catch (error) {
-        // Optional: Fehleranzeige
         console.error("Fehler beim Laden der Ergebnisse:", error);
       }
     }
 
     // Initial laden
     fetchResults();
-    // Alle 5 Sekunden neu laden
+    // Wiederholen
     setInterval(fetchResults, 5000);
+    // Re-render bei Resize
+    window.addEventListener("resize", fetchResults);
   </script>
 </body>
 </html>
