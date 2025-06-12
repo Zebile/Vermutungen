@@ -2,66 +2,9 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ergebnisse</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, sans-serif;
-      background: #f7f8fa;
-      color: #1a1a1a;
-      box-sizing: border-box;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 24px;
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-    }
-
-    h1 {
-      font-size: 2rem;
-      text-align: center;
-      margin-top: 24px;
-      margin-bottom: 30px;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-    }
-
-    canvas {
-      width: 100% !important;
-      height: 460px !important;
-      margin-bottom: 40px;
-      background: #f9faff;
-      border-radius: 12px;
-      box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-    }
-
-    .download-btn {
-      display: block;
-      margin: 28px auto 0 auto;
-      text-align: center;
-      background: #007bff;
-      color: #fff;
-      padding: 16px 32px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 1.1rem;
-      font-weight: 500;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      transition: background 0.2s;
-      max-width: 400px;
-    }
-
-    .download-btn:hover {
-      background: #0056b3;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
@@ -69,166 +12,43 @@
     <canvas id="chart1"></canvas>
     <canvas id="chart2"></canvas>
     <canvas id="chart3"></canvas>
-    <a href="/api/export" class="download-btn" download>Ergebnisse als Excel herunterladen</a>
   </div>
 
   <script>
-    const getFontSize = () => window.innerWidth < 600 ? 24 : window.innerWidth < 900 ? 28 : 32;
-    const getTickSize = () => window.innerWidth < 600 ? 20 : window.innerWidth < 900 ? 24 : 28;
-
-    function getOptions(xTitle, yTitle) {
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y', // Horizontale Balken
-        layout: {
-          padding: { top: 20, bottom: 20, left: 10, right: 10 }
-        },
-        plugins: {
-          legend: {
-            position: 'top',
-            labels: {
-              font: {
-                size: getFontSize(),
-                weight: 'bold',
-              },
-              maxWidth: 200,
-              boxHeight: 24
-            }
-          },
-          tooltip: {
-            bodyFont: { size: getFontSize() },
-            titleFont: { size: getFontSize() }
-          }
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: xTitle,
-              font: {
-                size: getFontSize(),
-                weight: 'bold'
-              },
-              color: '#111'
-            },
-            ticks: {
-              font: {
-                size: getTickSize(),
-                weight: '500'
-              },
-              color: '#333',
-              maxRotation: 0,
-              autoSkip: true,
-              maxTicksLimit: 10
-            }
-          },
-          y: {
-            title: {
-              display: true,
-              text: yTitle,
-              font: {
-                size: getFontSize(),
-                weight: 'bold'
-              },
-              color: '#111'
-            },
-            ticks: {
-              font: {
-                size: getTickSize(),
-                weight: '500'
-              },
-              color: '#333',
-              maxWidth: 180,
-              minRotation: 0,
-              padding: 6
-            }
-          }
-        }
-      };
-    }
-
-    let chart1, chart2, chart3;
-
     async function fetchResults() {
-      try {
-        const res = await fetch("/api/results");
-        const data = await res.json();
+      const res = await fetch("/api/results");
+      const data = await res.json();
 
-        const labelsGender = ["Männlich", "Weiblich"];
-        const labelsVictim = ["Junge", "Mädchen"];
-        const labelsContext = ["Nahes Umfeld", "Fernes Umfeld"];
-
-        const ctx1 = document.getElementById("chart1").getContext("2d");
-        const ctx2 = document.getElementById("chart2").getContext("2d");
-        const ctx3 = document.getElementById("chart3").getContext("2d");
-
-        const data1 = {
-          labels: labelsGender,
-          datasets: [{
-            label: "Tätergeschlecht",
-            data: [data.taeter.maennlich, data.taeter.weiblich],
-            backgroundColor: ["#007bff", "#ff6384"]
-          }]
-        };
-
-        const data2 = {
-          labels: labelsVictim,
-          datasets: [{
-            label: "Geschlecht Betroffener",
-            data: [data.betroffener.junge, data.betroffener.maedchen],
-            backgroundColor: ["#36a2eb", "#f87979"]
-          }]
-        };
-
-        const data3 = {
-          labels: labelsContext,
-          datasets: [{
-            label: "Täterumfeld",
-            data: [data.umfeld.nah, data.umfeld.fern],
-            backgroundColor: ["#4bc0c0", "#9966ff"]
-          }]
-        };
-
-        if (!chart1) {
-          chart1 = new Chart(ctx1, {
-            type: 'bar',
-            data: data1,
-            options: getOptions("Anzahl", "Geschlecht")
-          });
-          chart2 = new Chart(ctx2, {
-            type: 'bar',
-            data: data2,
-            options: getOptions("Anzahl", "Geschlecht")
-          });
-          chart3 = new Chart(ctx3, {
-            type: 'bar',
-            data: data3,
-            options: getOptions("Anzahl", "Umfeld")
-          });
-        } else {
-          chart1.data = data1;
-          chart1.options = getOptions("Anzahl", "Geschlecht");
-          chart1.update();
-
-          chart2.data = data2;
-          chart2.options = getOptions("Anzahl", "Geschlecht");
-          chart2.update();
-
-          chart3.data = data3;
-          chart3.options = getOptions("Anzahl", "Umfeld");
-          chart3.update();
+      new Chart(document.getElementById("chart1"), {
+        type: "bar",
+        data: {
+          labels: ["Männlich", "Weiblich"],
+          datasets: [{ label: "Tätergeschlecht", data: [data.taeter.maennlich, data.taeter.weiblich], backgroundColor: ["#007bff", "#ff6384"] }]
         }
+      });
 
-      } catch (err) {
-        console.error("Fehler beim Abrufen:", err);
-      }
+      new Chart(document.getElementById("chart2"), {
+        type: "bar",
+        data: {
+          labels: ["Junge", "Mädchen"],
+          datasets: [{ label: "Geschlecht Betroffener", data: [data.betroffener.junge, data.betroffener.maedchen], backgroundColor: ["#36a2eb", "#f87979"] }]
+        }
+      });
+
+      new Chart(document.getElementById("chart3"), {
+        type: "bar",
+        data: {
+          labels: ["Nahes Umfeld", "Fernes Umfeld"],
+          datasets: [{ label: "Täterumfeld", data: [data.umfeld.nah, data.umfeld.fern], backgroundColor: ["#4bc0c0", "#9966ff"] }]
+        }
+      });
     }
 
     fetchResults();
-    setInterval(fetchResults, 5000);
-    window.addEventListener('resize', fetchResults);
   </script>
 </body>
+  <a href="/api/export" class="download-btn" download>
+  Ergebnisse als Excel herunterladen
+</a>
+
 </html>
