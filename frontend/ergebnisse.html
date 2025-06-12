@@ -2,53 +2,95 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Ergebnisse</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live-Ergebnisse</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
-    <h1>Live-Ergebnisse</h1>
-    <canvas id="chart1"></canvas>
-    <canvas id="chart2"></canvas>
-    <canvas id="chart3"></canvas>
+<body class="bg-gray-100 text-gray-900">
+  <div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6 text-center">Live-Ergebnisse</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-white p-4 rounded-2xl shadow">
+        <canvas id="chart1"></canvas>
+      </div>
+      <div class="bg-white p-4 rounded-2xl shadow">
+        <canvas id="chart2"></canvas>
+      </div>
+      <div class="bg-white p-4 rounded-2xl shadow">
+        <canvas id="chart3"></canvas>
+      </div>
+    </div>
+
+    <div class="mt-8 text-center">
+      <a href="/api/export" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow" download>
+        Ergebnisse als Excel herunterladen
+      </a>
+    </div>
   </div>
 
   <script>
+    let chart1, chart2, chart3;
+
     async function fetchResults() {
-      const res = await fetch("/api/results");
-      const data = await res.json();
+      try {
+        const res = await fetch("/api/results");
+        if (!res.ok) throw new Error("Fehler beim Abrufen der Daten");
+        const data = await res.json();
 
-      new Chart(document.getElementById("chart1"), {
-        type: "bar",
-        data: {
-          labels: ["Männlich", "Weiblich"],
-          datasets: [{ label: "Tätergeschlecht", data: [data.taeter.maennlich, data.taeter.weiblich], backgroundColor: ["#007bff", "#ff6384"] }]
-        }
-      });
+        // Destroy existing charts if present
+        if (chart1) chart1.destroy();
+        if (chart2) chart2.destroy();
+        if (chart3) chart3.destroy();
 
-      new Chart(document.getElementById("chart2"), {
-        type: "bar",
-        data: {
-          labels: ["Junge", "Mädchen"],
-          datasets: [{ label: "Geschlecht Betroffener", data: [data.betroffener.junge, data.betroffener.maedchen], backgroundColor: ["#36a2eb", "#f87979"] }]
-        }
-      });
+        chart1 = new Chart(document.getElementById("chart1"), {
+          type: "bar",
+          data: {
+            labels: ["Männlich", "Weiblich"],
+            datasets: [{
+              label: "Tätergeschlecht",
+              data: [data.taeter.maennlich, data.taeter.weiblich],
+              backgroundColor: ["#007bff", "#ff6384"]
+            }]
+          }
+        });
 
-      new Chart(document.getElementById("chart3"), {
-        type: "bar",
-        data: {
-          labels: ["Nahes Umfeld", "Fernes Umfeld"],
-          datasets: [{ label: "Täterumfeld", data: [data.umfeld.nah, data.umfeld.fern], backgroundColor: ["#4bc0c0", "#9966ff"] }]
-        }
-      });
+        chart2 = new Chart(document.getElementById("chart2"), {
+          type: "bar",
+          data: {
+            labels: ["Junge", "Mädchen"],
+            datasets: [{
+              label: "Geschlecht Betroffener",
+              data: [data.betroffener.junge, data.betroffener.maedchen],
+              backgroundColor: ["#36a2eb", "#f87979"]
+            }]
+          }
+        });
+
+        chart3 = new Chart(document.getElementById("chart3"), {
+          type: "bar",
+          data: {
+            labels: ["Nahes Umfeld", "Fernes Umfeld"],
+            datasets: [{
+              label: "Täterumfeld",
+              data: [data.umfeld.nah, data.umfeld.fern],
+              backgroundColor: ["#4bc0c0", "#9966ff"]
+            }]
+          }
+        });
+
+      } catch (err) {
+        console.error("Fehler:", err);
+        alert("Die Ergebnisse konnten nicht geladen werden.");
+      }
     }
 
+    // Initial load
     fetchResults();
+
+    // Refresh alle 7 Sekunden
+    setInterval(fetchResults, 7000);
   </script>
 </body>
-  <a href="/api/export" class="download-btn" download>
-  Ergebnisse als Excel herunterladen
-</a>
-
 </html>
