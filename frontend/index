@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>Studie zu sexuellem Missbrauch</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+</head>
+<body>
+  <div id="form">
+    <h2>Vermutung abgeben</h2>
+    <form id="voteForm">
+      <label>
+        Geschlecht Täter: 
+        <select name="gender_perp" required>
+          <option value="">--</option>
+          <option value="männlich">männlich</option>
+          <option value="weiblich">weiblich</option>
+        </select>
+      </label><br>
+      <label>
+        Geschlecht Betroffene*r:
+        <select name="gender_victim" required>
+          <option value="">--</option>
+          <option value="Junge">Junge</option>
+          <option value="Mädchen">Mädchen</option>
+        </select>
+      </label><br>
+      <label>
+        Umfeld:
+        <select name="relation" required>
+          <option value="">--</option>
+          <option value="nah">nah</option>
+          <option value="fern">fern</option>
+        </select>
+      </label><br>
+      <button type="submit">Absenden</button>
+    </form>
+  </div>
+
+  <div id="results" style="display:none;">
+    <h2>Ergebnisse (letzte 2 Stunden)</h2>
+    <canvas id="chart"></canvas>
+  </div>
+</body>
+</html>
